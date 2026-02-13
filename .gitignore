@@ -1,2 +1,9 @@
 # OpenMemory - IDE/Assistant specific rules
 .windsurf/rules/openmemory.md
+
+# Python cache directories
+q-and-a-orchestra-agent/**/__pycache__/
+q-and-a-orchestra-agent/**/.pytest_cache/
+__pycache__/
+*.py[cod]
+*$py.class
