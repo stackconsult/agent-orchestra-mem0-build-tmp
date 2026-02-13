@@ -1,0 +1,234 @@
+# Agent Orchestra v2 Dependencies
+# Production-ready enterprise stack with TimescaleDB, Vector DB, and ML capabilities
+
+# =============================================================================
+# CORE WEB FRAMEWORK
+# =============================================================================
+fastapi==0.109.0
+uvicorn[standard]==0.24.0
+pydantic==2.5.0
+pydantic-settings==2.1.0
+python-multipart==0.0.6
+
+# =============================================================================
+# ASYNC & NETWORKING
+# =============================================================================
+asyncio==3.4.3
+aiohttp==3.9.0
+aiofiles==23.2.0
+httpx==0.25.0
+
+# =============================================================================
+# DATABASE & TIME-SERIES
+# =============================================================================
+# PostgreSQL with TimescaleDB extension
+psycopg[binary]==3.1.12
+SQLAlchemy==2.0.23
+alembic==1.13.0
+# Note: TimescaleDB uses PostgreSQL, handled by asyncpg/psycopg
+
+# Async PostgreSQL driver
+asyncpg==0.29.0
+
+# =============================================================================
+# VECTOR DATABASE
+# =============================================================================
+# Weaviate (primary vector DB)
+weaviate-client==4.19.2
+
+# Alternative: Pinecone (uncomment if using Pinecone)
+# pinecone-client==3.0.0
+
+# =============================================================================
+# LLM PROVIDERS
+# =============================================================================
+openai==1.3.0
+anthropic==0.12.0
+ollama==0.1.0
+
+# Generic OpenAI-compatible API support
+tiktoken==0.5.2
+
+# =============================================================================
+# MACHINE LEARNING & NLP
+# =============================================================================
+# Embeddings (lightweight, fast)
+sentence-transformers==2.2.2
+
+# Transformers for validation and analysis
+transformers==4.36.0
+torch==2.10.0
+torchvision==0.21.0
+
+# NumPy for numerical operations
+numpy==1.24.4
+scipy==1.11.4
+
+# Scikit-learn for analytics
+scikit-learn==1.3.2
+
+# =============================================================================
+# CACHING & SESSION MANAGEMENT
+# =============================================================================
+redis==5.0.1
+aioredis==2.0.1
+
+# =============================================================================
+# METRICS & OBSERVABILITY
+# =============================================================================
+prometheus-client==0.19.0
+python-json-logger==2.0.7
+
+# OpenTelemetry for distributed tracing
+opentelemetry-api==1.21.0
+opentelemetry-sdk==1.21.0
+opentelemetry-instrumentation-fastapi==0.42b0
+opentelemetry-instrumentation-sqlalchemy==0.42b0
+opentelemetry-instrumentation-redis==0.42b0
+opentelemetry-exporter-otlp==1.21.0
+
+# =============================================================================
+# SECURITY & COMPLIANCE
+# =============================================================================
+# Cryptography for security
+cryptography==41.0.8
+passlib[bcrypt]==1.7.4
+python-jose[cryptography]==3.3.0
+
+# Email for budget alerts
+aiosmtplib==3.0.1
+email-validator==2.1.0
+
+# =============================================================================
+# CONFIGURATION & UTILITIES
+# =============================================================================
+pyyaml==6.0.1
+python-dotenv==1.0.0
+requests==2.31.0
+uuid==1.30
+
+# Date/time utilities
+python-dateutil==2.8.2
+pytz==2023.3
+
+# =============================================================================
+# DEVELOPMENT & TESTING
+# =============================================================================
+pytest==7.4.3
+pytest-asyncio==0.21.1
+pytest-cov==4.1.0
+pytest-mock==3.12.0
+pytest-postgresql==5.0.0
+pytest-redis==3.0.2
+
+# Testcontainers for integration testing
+testcontainers==3.7.1
+
+# =============================================================================
+# CODE QUALITY & LINTING
+# =============================================================================
+black==23.12.0
+pylint==3.0.0
+mypy==1.7.0
+flake8==6.1.0
+isort==5.12.0
+
+# =============================================================================
+# DEVOPS & DEPLOYMENT
+# =============================================================================
+docker==7.0.0
+kubernetes==28.0.0
+helm==3.13.0
+
+# =============================================================================
+# MONITORING & HEALTH
+# =============================================================================
+psutil==5.9.6
+click==8.1.7
+rich==13.7.0
+
+# =============================================================================
+# ADDITIONAL ENTERPRISE FEATURES
+# =============================================================================
+
+# Background tasks and scheduling
+celery==5.3.4
+flower==2.0.1
+
+# PDF/document processing (for validation)
+pypdf2==3.0.1
+python-docx==1.1.0
+
+# Webhook support for SIEM integration
+webhooks==0.2.0
+
+# JSON schema validation
+jsonschema==4.20.0
+
+# Rate limiting
+slowapi==0.1.9
+
+# =============================================================================
+# OPTIONAL DEPENDENCIES (uncomment as needed)
+# =============================================================================
+
+# Advanced analytics (if using pandas)
+# pandas==2.1.4
+# matplotlib==3.8.2
+# seaborn==0.13.0
+
+# Advanced ML (if using additional ML models)
+# xgboost==2.0.3
+# lightgbm==4.1.0
+
+# Additional vector databases (alternatives to Weaviate)
+# qdrant-client==1.6.9
+# chromadb==0.4.18
+
+# Additional LLM providers
+# google-generativeai==0.3.2
+# cohere==4.39.0
+# replicate==0.15.4
+
+# Additional monitoring
+# grafana-api==1.0.3
+# datadog==0.47.1
+
+# Additional security
+# vault==1.1.1
+# aws-secretsmanager==3.4.0
+
+# =============================================================================
+# DEVELOPMENT ONLY (not for production)
+# =============================================================================
+
+# Debugging and profiling
+# ipython==8.17.2
+# jupyter==1.0.0
+# memory-profiler==0.61.0
+
+# Load testing
+# locust==2.17.0
+
+# Documentation
+# mkdocs==1.5.3
+# mkdocs-material==9.4.8
+
+# =============================================================================
+# VERSION PINNING RATIONALE
+# =============================================================================
+
+# All dependencies are pinned to specific versions for:
+# 1. Reproducible builds across environments
+# 2. Security - known versions with known vulnerabilities
+# 3. Stability - prevent unexpected breaking changes
+# 4. Compliance - audit trail of exact versions used
+# 5. Performance - tested and validated version combinations
+
+# To upgrade dependencies:
+# 1. Test in development environment first
+# 2. Run full test suite
+# 3. Check for breaking changes
+# 4. Update version numbers here
+# 5. Re-run tests in staging
+# 6. Deploy to production with monitoring

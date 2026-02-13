@@ -1,0 +1,89 @@
+# config/models.yaml
+# Registry of all models (local + cloud) and their capabilities.
+
+providers:
+  ollama:
+    type: local
+    base_url: http://localhost:11434
+    discover: true        # try /api/tags to auto-merge models
+    models:
+      - id: llama3-8b-instruct
+        display_name: "Llama 3 8B Instruct"
+        capabilities: [general_qa, planning, summarization, tool_use_light]
+        max_context: 8192
+        quality_tier: medium
+        latency_tier: medium
+        cost_profile:
+          type: local_cpu
+          relative_cost: 1.0
+
+      - id: qwen2.5-3b-instruct
+        display_name: "Qwen2.5 3B Instruct"
+        capabilities: [routing, classification, light_qa, critic]
+        max_context: 4096
+        quality_tier: low
+        latency_tier: low
+        cost_profile:
+          type: local_cpu
+          relative_cost: 0.5
+
+      - id: mistral-7b-instruct
+        display_name: "Mistral 7B Instruct"
+        capabilities: [general_qa, summarization]
+        max_context: 8192
+        quality_tier: medium
+        latency_tier: medium
+        cost_profile:
+          type: local_cpu
+          relative_cost: 1.0
+
+  # OpenAI-compatible "generic" clouds (Moonshot, LM Studio cloud, etc.)
+  generic_openai:
+    type: cloud
+    base_url_env: GENERIC_OPENAI_BASE_URL   # e.g. https://dashscope.aliyuncs.com/...
+    api_key_env: GENERIC_OPENAI_API_KEY
+    models:
+      - id: moonshot-v1-8k
+        display_name: "Moonshot V1 8K"
+        capabilities: [complex_qa, summarization, coding]
+        max_context: 8192
+        quality_tier: high
+        latency_tier: medium
+        cost_profile:
+          type: paid
+          currency: USD
+          input_per_1k: 0.2
+          output_per_1k: 0.4
+
+  openai:
+    type: cloud
+    base_url: https://api.openai.com/v1
+    api_key_env: OPENAI_API_KEY
+    models:
+      - id: gpt-4.1-mini
+        display_name: "GPT‑4.1 Mini"
+        capabilities: [tool_use, complex_qa, coding, planning]
+        max_context: 32768
+        quality_tier: high
+        latency_tier: medium
+        cost_profile:
+          type: paid
+          currency: USD
+          input_per_1k: 0.15
+          output_per_1k: 0.6
+
+  anthropic:
+    type: cloud
+    api_key_env: ANTHROPIC_API_KEY
+    models:
+      - id: claude-3-5-sonnet
+        display_name: "Claude 3.5 Sonnet"
+        capabilities: [planning, multi_agent_orchestration, complex_qa]
+        max_context: 200000
+        quality_tier: very_high
+        latency_tier: medium
+        cost_profile:
+          type: paid
+          currency: USD
+          input_per_1k: 3.0
+          output_per_1k: 15.0

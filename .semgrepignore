@@ -1,0 +1,52 @@
+# Semgrep ignore patterns
+# Exclude test files and directories
+tests/
+test_*.py
+*_test.py
+conftest.py
+
+# Exclude cache directories
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+.Python
+env/
+venv/
+.venv/
+pip-log.txt
+pip-delete-this-directory.txt
+.tox/
+.coverage
+.coverage.*
+.cache
+nosetests.xml
+coverage.xml
+*.cover
+*.log
+.git
+.mypy_cache
+.pytest_cache
+.hypothesis
+
+# Exclude build artifacts
+build/
+dist/
+*.egg-info/
+
+# Exclude documentation
+docs/_build/
+
+# Exclude node_modules
+node_modules/
+
+# Exclude IDE files
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# Exclude OS files
+.DS_Store
+Thumbs.db

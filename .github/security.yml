@@ -1,0 +1,30 @@
+# Security Configuration
+security:
+  contacts:
+    security: "security-team@example.com"
+    policy: "policy-team@example.com"
+    compliance: "compliance@example.com"
+  
+  context:
+    application: "Agent Orchestra"
+    environment: "production"
+    data_classification: "confidential"
+    compliance_frameworks:
+      - "SOC2"
+      - "GDPR"
+      - "HIPAA"
+  
+  privilege_escalation:
+    enabled: false
+    require_approval: true
+    audit_log: true
+    
+  sql_injection_protection:
+    parameterized_queries: true
+    input_validation: true
+    orm_usage: true
+    
+  code_execution:
+    eval_disabled: true
+    safe_arithmetic_only: true
+    sandboxed_execution: false

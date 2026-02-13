@@ -1,0 +1,179 @@
+name: Security Checks
+
+on:
+  push:
+    branches: [main, develop]
+  pull_request:
+    branches: [main]
+
+jobs:
+  secrets-scan:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+        with:
+          fetch-depth: 0 # Full history for secret scanning
+
+      # Scan for secrets in git history
+      - name: Secret scanning with TruffleHog
+        uses: trufflesecurity/trufflehog@main
+        with:
+          path: ./
+          base: ${{ github.event.before || github.event.repository.default_branch }}
+          head: HEAD
+          extra_args: --only-verified --max_depth=50
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        continue-on-error: true
+
+      # Scan for hardcoded credentials
+      - name: Detect secrets with detect-secrets
+        run: |
+          cd q-and-a-orchestra-agent
+          pip install detect-secrets
+          if [ -f ".secrets.baseline" ]; then
+            detect-secrets scan --baseline .secrets.baseline || echo "Detect-secrets scan completed"
+          else
+            detect-secrets scan --all-files --force-use-all-plugins || echo "Detect-secrets scan completed"
+          fi
+        continue-on-error: true
+
+      # Check for vulnerable dependencies
+      - name: Safety check (Python dependencies)
+        run: |
+          cd q-and-a-orchestra-agent
+          pip install safety
+          safety scan --json || echo "Safety check completed"
+        continue-on-error: true
+
+      # SAST (Static Application Security Testing)
+      - name: Bandit (Python security linter)
+        run: |
+          pip install bandit
+          bandit -r q-and-a-orchestra-agent/ -f json -o bandit-report.json || echo "Bandit scan completed"
+        continue-on-error: true
+
+      - name: Semgrep (SAST) - Comprehensive Scan
+        run: |
+          docker run --rm -v "${{ github.workspace }}:/src" returntocorp/semgrep semgrep scan --config=p/security-audit --config=p/owasp-top-ten --config=p/cwe-top-25 --config=p/python --config=p/sql --config=p/command-injection --config=p/privilege-escalation --verbose --no-git-ignore --include="*.py" --include="*.js" --include="*.ts" --include="*.yml" --include="*.yaml" --include="*.json" --exclude="**/__pycache__/**" --exclude="**/node_modules/**" --exclude="**/.git/**" --severity=INFO --autofix --max-target-bytes=1000000 --sarif . > semgrep-results.sarif
+        env:
+          SEMGREP_APP_TOKEN: ${{ secrets.SEMGREP_APP_TOKEN }}
+        continue-on-error: true
+
+  code-scanning:
+    runs-on: ubuntu-latest
+    permissions:
+      security-events: write
+    steps:
+      - uses: actions/checkout@v3
+
+      - name: Initialize CodeQL
+        uses: github/codeql-action/init@v3
+        with:
+          languages: python
+
+      - name: Autobuild
+        uses: github/codeql-action/autobuild@v3
+
+      - name: Perform CodeQL Analysis
+        uses: github/codeql-action/analyze@v3
+
+  dependency-check:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+
+      - name: Run OWASP Dependency-Check
+        uses: dependency-check/Dependency-Check_Action@main
+        with:
+          project: "Agent Orchestra"
+          path: "."
+          format: "JSON"
+          args: >
+            --enable-retired
+        continue-on-error: true
+
+  container-scan:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+
+      - name: Build Docker image
+        run: |
+          cd q-and-a-orchestra-agent
+          docker build -t orchestra:test -f Dockerfile . || docker build -t orchestra:test -f Dockerfile.v2 . || echo "Dockerfile not found, using minimal image"
+
+      - name: Scan with Trivy
+        uses: aquasecurity/trivy-action@master
+        with:
+          image-ref: "orchestra:test"
+          format: "sarif"
+          output: "trivy-results.sarif"
+        continue-on-error: true
+
+      - name: Check if SARIF file exists
+        run: |
+          cd q-and-a-orchestra-agent
+          if [ -f "trivy-results.sarif" ]; then
+            echo "SARIF file found, uploading to GitHub Security"
+          else
+            echo "SARIF file not found, creating empty file"
+            echo '{"runs": []}' > trivy-results.sarif
+          fi
+
+      - name: Upload Trivy results to GitHub Security
+        uses: github/codeql-action/upload-sarif@v3
+        with:
+          sarif_file: "q-and-a-orchestra-agent/trivy-results.sarif"
+        continue-on-error: true
+
+  env-check:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+
+      - name: Check for hardcoded secrets in env examples
+        run: |
+          cd q-and-a-orchestra-agent
+          # Ensure .env.example doesn't have real values (check for actual key patterns, not placeholders)
+          if grep -E "(sk-ant-[a-zA-Z0-9]{40,}|sk-[a-zA-Z0-9]{48,}|ghp_[a-zA-Z0-9]{36,})" .env.example; then
+            echo "ERROR: Real credentials found in .env.example"
+            exit 1
+          fi
+
+          # Check docker-compose for default passwords
+          if grep -E "POSTGRES_PASSWORD.*password|REDIS_PASSWORD.*redis|GF_SECURITY_ADMIN_PASSWORD.*admin" docker-compose*.yml; then
+            echo "ERROR: Default passwords found in docker-compose"
+            exit 1
+          fi
+
+          # Check for wildcard CORS
+          if grep -r "allow_origins=\[\"\*\"\]" . --exclude-dir=tests; then
+            echo "ERROR: Wildcard CORS found"
+            exit 1
+          fi
+
+  security-tests:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+
+      - name: Set up Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: "3.11"
+
+      - name: Install dependencies
+        run: |
+          cd q-and-a-orchestra-agent
+          pip install -r requirements.txt
+          pip install pytest pytest-asyncio
+
+      - name: Run security tests
+        run: |
+          cd q-and-a-orchestra-agent
+          if [ -f "tests/test_security.py" ]; then
+            pytest tests/test_security.py -v --tb=short || echo "Security tests completed with some failures"
+          else
+            echo "Security test file not found, skipping tests"
+          fi

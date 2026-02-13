@@ -1,0 +1,300 @@
+# Agent Orchestra v2 Model Configuration
+# This file is automatically populated by the discovery orchestrator
+# Manual overrides can be added below
+
+# =============================================================================
+# PROVIDER CONFIGURATIONS
+# =============================================================================
+
+providers:
+  # Ollama (Local Models)
+  ollama:
+    type: local
+    base_url: http://localhost:11434
+    timeout: 30
+    auto_discover: true
+    priority: high  # Prefer local models
+    models:
+      # Discovered models will be auto-added here
+      # Manual overrides:
+      # llama3-8b-instruct:
+      #   display_name: "Llama 3 8B Instruct"
+      #   context_window: 8192
+      #   estimated_cost_input_per_1k: 0.0  # Free for local
+      #   estimated_cost_output_per_1k: 0.0
+      #   capabilities: ["chat", "code", "analysis"]
+      #   quality_tier: "medium"
+      #   benchmark_results:
+      #     reasoning_score: 0.75
+      #     code_score: 0.80
+      #   last_tested: "2024-01-15T10:30:00Z"
+
+  # OpenAI
+  openai:
+    type: cloud
+    base_url: https://api.openai.com/v1
+    timeout: 60
+    auto_discover: true
+    priority: medium
+    models:
+      # Auto-discovered models:
+      # gpt-4-turbo:
+      #   display_name: "GPT-4 Turbo"
+      #   context_window: 128000
+      #   estimated_cost_input_per_1k: 0.01
+      #   estimated_cost_output_per_1k: 0.03
+      #   capabilities: ["chat", "code", "analysis", "vision"]
+      #   quality_tier: "high"
+      # benchmark_results:
+      #   reasoning_score: 0.92
+      #   code_score: 0.88
+      # last_tested: "2024-01-15T10:30:00Z"
+
+  # Anthropic Claude
+  anthropic:
+    type: cloud
+    base_url: https://api.anthropic.com
+    timeout: 60
+    auto_discover: true
+    priority: medium
+    models:
+      # Auto-discovered models:
+      # claude-3-5-sonnet-20241022:
+      #   display_name: "Claude 3.5 Sonnet"
+      #   context_window: 200000
+      #   estimated_cost_input_per_1k: 0.003
+      #   estimated_cost_output_per_1k: 0.015
+      #   capabilities: ["chat", "code", "analysis", "vision"]
+      #   quality_tier: "high"
+      # benchmark_results:
+      #   reasoning_score: 0.94
+      #   code_score: 0.91
+      # last_tested: "2024-01-15T10:30:00Z"
+
+  # DeepSeek
+  deepseek:
+    type: cloud
+    base_url: https://api.deepseek.com/v1
+    timeout: 60
+    auto_discover: true
+    priority: medium
+    models:
+      # Auto-discovered models:
+      # deepseek-coder:
+      #   display_name: "DeepSeek Coder"
+      #   context_window: 16384
+      #   estimated_cost_input_per_1k: 0.001
+      #   estimated_cost_output_per_1k: 0.002
+      #   capabilities: ["code", "analysis"]
+      #   quality_tier: "medium"
+      # benchmark_results:
+      #   reasoning_score: 0.82
+      #   code_score: 0.89
+      # last_tested: "2024-01-15T10:30:00Z"
+
+  # Generic OpenAI-compatible APIs
+  generic_openai:
+    type: cloud
+    base_url: https://your-custom-endpoint.com/v1
+    timeout: 60
+    auto_discover: false  # Manual configuration only
+    priority: low
+    models:
+      # Manual configuration only:
+      # custom-model:
+      #   display_name: "Custom Model"
+      #   context_window: 4096
+      #   estimated_cost_input_per_1k: 0.005
+      #   estimated_cost_output_per_1k: 0.01
+      #   capabilities: ["chat"]
+      #   quality_tier: "medium"
+
+# =============================================================================
+# MODEL CATEGORIES (for policy routing)
+# =============================================================================
+
+model_categories:
+  # Local models (free, fast)
+  local:
+    providers: ["ollama"]
+    quality_tiers: ["low", "medium"]
+    use_cases: ["drafting", "prototyping", "bulk_processing"]
+    
+  # Standard cloud models (balanced)
+  standard:
+    providers: ["openai", "anthropic", "deepseek"]
+    quality_tiers: ["medium"]
+    use_cases: ["general_chat", "basic_analysis"]
+    
+  # Premium models (high quality)
+  premium:
+    providers: ["openai", "anthropic"]
+    quality_tiers: ["high"]
+    use_cases: ["critical_analysis", "complex_reasoning", "production_code"]
+
+# =============================================================================
+# TASK-SPECIFIC MODEL PREFERENCES
+# =============================================================================
+
+task_model_mapping:
+  # Code-related tasks
+  code_generation:
+    preferred_models:
+      - "deepseek-coder"
+      - "claude-3-5-sonnet-20241022"
+      - "gpt-4-turbo"
+      - "llama3-8b-instruct"  # Local fallback
+    fallback_strategy: "local_preferred"
+    
+  code_review:
+    preferred_models:
+      - "claude-3-5-sonnet-20241022"
+      - "gpt-4-turbo"
+      - "deepseek-coder"
+    fallback_strategy: "quality_first"
+    
+  # Analysis tasks
+  data_analysis:
+    preferred_models:
+      - "gpt-4-turbo"
+      - "claude-3-5-sonnet-20241022"
+      - "llama3-8b-instruct"
+    fallback_strategy: "cost_balanced"
+    
+  document_analysis:
+    preferred_models:
+      - "claude-3-5-sonnet-20241022"  # Best for long documents
+      - "gpt-4-turbo"
+    fallback_strategy: "quality_first"
+    
+  # Creative tasks
+  creative_writing:
+    preferred_models:
+      - "claude-3-5-sonnet-20241022"
+      - "gpt-4-turbo"
+      - "llama3-8b-instruct"
+    fallback_strategy: "quality_first"
+    
+  # General chat
+  general_chat:
+    preferred_models:
+      - "llama3-8b-instruct"  # Start with local
+      - "deepseek-coder"
+      - "claude-3-5-sonnet-20241022"
+    fallback_strategy: "local_preferred"
+
+# =============================================================================
+# MODEL PERFORMANCE BENCHMARKS
+# =============================================================================
+
+# These are updated automatically by the discovery orchestrator
+# Manual benchmarks can be added for reference
+
+benchmark_suites:
+  reasoning:
+    prompts:
+      - "Solve this logic puzzle: ..."
+      - "Explain the reasoning behind: ..."
+    scoring_metrics: ["accuracy", "coherence", "depth"]
+    
+  code_generation:
+    prompts:
+      - "Write a Python function to: ..."
+      - "Debug this code: ..."
+    scoring_metrics: ["correctness", "efficiency", "style"]
+    
+  analysis:
+    prompts:
+      - "Analyze this data: ..."
+      - "Summarize this document: ..."
+    scoring_metrics: ["accuracy", "completeness", "insight"]
+    
+  creative:
+    prompts:
+      - "Write a story about: ..."
+      - "Create a poem: ..."
+    scoring_metrics: ["creativity", "coherence", "engagement"]
+
+# =============================================================================
+# MODEL HEALTH CHECKS
+# =============================================================================
+
+health_checks:
+  enabled: true
+  interval_minutes: 5
+  timeout_seconds: 10
+  failure_threshold: 3  # Mark as unhealthy after 3 failures
+  
+  test_prompt: "Hello, how are you?"
+  expected_response_length_min: 5
+  expected_response_length_max: 1000
+
+# =============================================================================
+# AUTO-DISCOVERY CONFIGURATION
+# =============================================================================
+
+auto_discovery:
+  enabled: true
+  schedule: "0 0 * * *"  # Daily at midnight
+  parallel_discovery: true
+  max_concurrent_discoveries: 5
+  
+  # Discovery sources
+  sources:
+    ollama:
+      enabled: true
+      refresh_models: true
+      
+    openai:
+      enabled: true
+      endpoint: "/models"
+      
+    anthropic:
+      enabled: true
+      models: ["claude-3-5-sonnet-20241022", "claude-3-haiku-20240307"]
+      
+    deepseek:
+      enabled: true
+      endpoint: "/models"
+
+# =============================================================================
+# MODEL RETIREMENT POLICY
+# =============================================================================
+
+retirement_policy:
+  # Retire models that haven't been used in X days
+  inactivity_threshold_days: 90
+  
+  # Retire models with success rate below X%
+  min_success_rate: 0.8
+  
+  # Retire models with average quality score below X
+  min_quality_score: 0.6
+  
+  # Always keep these models regardless of metrics
+  protected_models:
+    - "llama3-8b-instruct"  # Keep at least one local model
+    - "claude-3-5-sonnet-20241022"  # Keep best model
+  
+  # Notification before retirement
+  retirement_warning_days: 7
+  notification_channels: ["email", "slack"]
+
+# =============================================================================
+# COST OPTIMIZATION
+# =============================================================================
+
+cost_optimization:
+  # Automatically prefer cheaper models for non-critical tasks
+  enable_cost_optimization: true
+  
+  # Cost thresholds for model selection
+  max_cost_per_request_usd: 0.10
+  max_cost_per_1k_tokens: 0.05
+  
+  # Prefer local models when cost difference is significant
+  local_model_advantage_threshold: 0.8  # 80% cost savings
+  
+  # Budget-aware routing
+  enable_budget_aware_routing: true
+  budget_exceeded_action: "downgrade_to_local"

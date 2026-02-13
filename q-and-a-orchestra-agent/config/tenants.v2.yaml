@@ -1,0 +1,429 @@
+# Agent Orchestra v2 Tenant Configuration
+# Multi-tenant setup with complete isolation and customization
+
+# =============================================================================
+# DEFAULT TENANT CONFIGURATION
+# =============================================================================
+
+default:
+  # Basic tenant information
+  tenant_name: "Default Tenant"
+  display_name: "Default"
+  tenant_type: "standard"
+  
+  # Model access (empty = all models allowed)
+  allowed_models: []
+  blocked_models: []
+  
+  # Budget limits
+  monthly_budget_usd: 1000
+  daily_budget_usd: 50
+  
+  # Routing preferences
+  routing_mode: "local-preferred"
+  custom_policy_weights: null
+  
+  # Feature flags
+  enable_semantic_cache: true
+  enable_response_validation: true
+  enable_audit_logging: true
+  enable_budget_management: true
+  enable_analytics: true
+  
+  # Data residency
+  data_region: "us-east"
+  db_schema: "tenant_default"
+  vector_db_namespace: "tenant_default"
+  
+  # Contact information
+  admin_email: "admin@example.com"
+  billing_contact: "billing@example.com"
+  
+  # Custom settings
+  custom_settings:
+    cache_similarity_threshold: 0.95
+    validation_quality_threshold: 0.6
+    budget_alert_threshold: 80
+
+# =============================================================================
+# ENTERPRISE TENANTS
+# =============================================================================
+
+# Large enterprise with high budget and premium features
+enterprise_acme:
+  tenant_name: "ACME Corporation"
+  display_name: "ACME Corp"
+  tenant_type: "enterprise"
+  
+  # Model access - premium models only
+  allowed_models:
+    - "gpt-4-turbo"
+    - "claude-3-5-sonnet-20241022"
+    - "claude-3-opus-20240229"
+  blocked_models:
+    - "gpt-3.5-turbo"  # Too basic for enterprise
+  
+  # High budget limits
+  monthly_budget_usd: 10000
+  daily_budget_usd: 500
+  
+  # Performance-focused routing
+  routing_mode: "performance"
+  custom_policy_weights:
+    cost: 0.1      # Less cost sensitive
+    quality: 0.8   # Heavily prioritize quality
+    latency: 0.1   # Some latency consideration
+  
+  # All features enabled
+  enable_semantic_cache: true
+  enable_response_validation: true
+  enable_audit_logging: true
+  enable_budget_management: true
+  enable_analytics: true
+  enable_advanced_monitoring: true
+  enable_custom_reports: true
+  
+  # Data residency (EU)
+  data_region: "eu-west"
+  db_schema: "tenant_acme"
+  vector_db_namespace: "tenant_acme"
+  
+  # Enterprise contacts
+  admin_email: "it-admin@acme.com"
+  billing_contact: "finance@acme.com"
+  security_contact: "security@acme.com"
+  
+  # Custom settings
+  custom_settings:
+    cache_similarity_threshold: 0.98  # Higher precision
+    validation_quality_threshold: 0.8  # Stricter validation
+    budget_alert_threshold: 70        # Earlier alerts
+    compliance_mode: "strict"
+    audit_retention_days: 3650        # 10 years
+
+# =============================================================================
+# STARTUP TENANTS
+# =============================================================================
+
+# Budget-conscious startup
+startup_techco:
+  tenant_name: "TechCo Startup"
+  display_name: "TechCo"
+  tenant_type: "startup"
+  
+  # Model access - cost-effective models
+  allowed_models:
+    - "llama3-8b-instruct"      # Free local
+    - "deepseek-coder"         # Cheap cloud
+    - "claude-3-haiku-20240307" # Cheapest premium
+  blocked_models:
+    - "gpt-4-turbo"            # Too expensive
+    - "claude-3-5-sonnet-20241022"  # Too expensive
+  
+  # Limited budget
+  monthly_budget_usd: 500
+  daily_budget_usd: 25
+  
+  # Cost-optimized routing
+  routing_mode: "cost_optimized"
+  custom_policy_weights:
+    cost: 0.7      # Heavily cost-focused
+    quality: 0.2   # Minimum quality
+    latency: 0.1   # Less concern
+  
+  # Essential features only
+  enable_semantic_cache: true      # Save costs
+  enable_response_validation: false  # Save costs
+  enable_audit_logging: true
+  enable_budget_management: true
+  enable_analytics: false         # Save costs
+  
+  # Data residency
+  data_region: "us-east"
+  db_schema: "tenant_techco"
+  vector_db_namespace: "tenant_techco"
+  
+  # Startup contacts
+  admin_email: "founder@techco.com"
+  billing_contact: "founder@techco.com"
+  
+  # Custom settings
+  custom_settings:
+    cache_similarity_threshold: 0.90  # Lower threshold for more hits
+    budget_alert_threshold: 90        # Later alerts to avoid noise
+    cost_optimization_aggressive: true
+
+# =============================================================================
+# DEVELOPMENT TENANTS
+# =============================================================================
+
+# Internal development team
+dev_internal:
+  tenant_name: "Internal Development"
+  display_name: "Dev Team"
+  tenant_type: "internal"
+  
+  # Model access - local models only for development
+  allowed_models:
+    - "llama3-8b-instruct"
+    - "qwen2.5-3b-instruct"
+    - "mistral-7b-instruct"
+  blocked_models: []  # No restrictions on local models
+  
+  # Very low budget (internal use)
+  monthly_budget_usd: 200
+  daily_budget_usd: 10
+  
+  # Local-first routing
+  routing_mode: "local-preferred"
+  custom_policy_weights:
+    cost: 0.8      # Prefer free local models
+    quality: 0.15   # Less critical for dev
+    latency: 0.05  # Not critical
+  
+  # Development features
+  enable_semantic_cache: true
+  enable_response_validation: false  # Disabled for testing
+  enable_audit_logging: true
+  enable_budget_management: true
+  enable_analytics: false
+  enable_debug_mode: true
+  
+  # Data residency
+  data_region: "us-east"
+  db_schema: "tenant_dev"
+  vector_db_namespace: "tenant_dev"
+  
+  # Development contacts
+  admin_email: "dev-team@company.com"
+  
+  # Custom settings
+  custom_settings:
+    cache_similarity_threshold: 0.85  # More permissive for dev
+    debug_logging: true
+    test_mode: true
+    mock_external_apis: true
+
+# =============================================================================
+# EDUCATION TENANTS
+# =============================================================================
+
+# University research lab
+university_research:
+  tenant_name: "University Research Lab"
+  display_name: "Research Lab"
+  tenant_type: "education"
+  
+  # Model access - balanced for research
+  allowed_models:
+    - "llama3-8b-instruct"
+    - "gpt-4-turbo"
+    - "claude-3-5-sonnet-20241022"
+  blocked_models: []  # Full access for research
+  
+  # Moderate budget (educational discount)
+  monthly_budget_usd: 1500
+  daily_budget_usd: 75
+  
+  # Balanced routing for research quality
+  routing_mode: "balanced"
+  custom_policy_weights:
+    cost: 0.4      # Moderate cost concern
+    quality: 0.5   # Research quality important
+    latency: 0.1   # Less critical
+  
+  # Research-focused features
+  enable_semantic_cache: true
+  enable_response_validation: true
+  enable_audit_logging: true
+  enable_budget_management: true
+  enable_analytics: true
+  enable_research_mode: true
+  
+  # Data residency (educational data)
+  data_region: "us-east"
+  db_schema: "tenant_university"
+  vector_db_namespace: "tenant_university"
+  
+  # Academic contacts
+  admin_email: "research-admin@university.edu"
+  billing_contact: "grants@university.edu"
+  
+  # Custom settings
+  custom_settings:
+    cache_similarity_threshold: 0.95
+    validation_quality_threshold: 0.7
+    research_data_retention_days: 1825  # 5 years
+    citation_tracking: true
+
+# =============================================================================
+# TRIAL TENANTS
+# =============================================================================
+
+# Free trial users
+trial_user:
+  tenant_name: "Trial User"
+  display_name: "Free Trial"
+  tenant_type: "trial"
+  
+  # Model access - limited to free/cheap models
+  allowed_models:
+    - "llama3-8b-instruct"      # Free local
+    - "claude-3-haiku-20240307" # Cheap premium
+  blocked_models:
+    - "gpt-4-turbo"
+    - "claude-3-5-sonnet-20241022"
+    - "deepseek-coder"
+  
+  # Very limited budget
+  monthly_budget_usd: 50
+  daily_budget_usd: 5
+  
+  # Cost-optimized routing
+  routing_mode: "cost_optimized"
+  custom_policy_weights:
+    cost: 0.8      # Very cost-focused
+    quality: 0.15   # Basic quality only
+    latency: 0.05  # Not critical
+  
+  # Limited features
+  enable_semantic_cache: true      # Help stay within budget
+  enable_response_validation: false
+  enable_audit_logging: true
+  enable_budget_management: true
+  enable_analytics: false
+  
+  # Data residency
+  data_region: "us-east"
+  db_schema: "tenant_trial"
+  vector_db_namespace: "tenant_trial"
+  
+  # Trial contacts
+  admin_email: "user@example.com"
+  
+  # Custom settings
+  custom_settings:
+    cache_similarity_threshold: 0.85  # More cache hits
+    budget_alert_threshold: 90        # Later alerts
+    trial_mode: true
+    feature_restrictions: true
+
+# =============================================================================
+# GOVERNMENT TENANTS
+# =============================================================================
+
+# Government agency with strict compliance
+gov_agency:
+  tenant_name: "Government Agency"
+  display_name: "Gov Agency"
+  tenant_type: "government"
+  
+  # Model access - approved models only
+  allowed_models:
+    - "llama3-8b-instruct"      # Local (more secure)
+    - "claude-3-5-sonnet-20241022"  # Approved for gov use
+  blocked_models:
+    - "gpt-4-turbo"            # Not approved yet
+  
+  # Government budget
+  monthly_budget_usd: 5000
+  daily_budget_usd: 250
+  
+  # Security-focused routing
+  routing_mode: "local-preferred"  # Prefer local for security
+  custom_policy_weights:
+    cost: 0.3      # Moderate cost concern
+    quality: 0.6   # High quality required
+    security: 0.1   # Security priority
+  
+  # Compliance features
+  enable_semantic_cache: true
+  enable_response_validation: true
+  enable_audit_logging: true
+  enable_budget_management: true
+  enable_analytics: true
+  enable_compliance_mode: true
+  enable_data_encryption: true
+  
+  # Data residency (US government data)
+  data_region: "us-gov-east"
+  db_schema: "tenant_gov"
+  vector_db_namespace: "tenant_gov"
+  
+  # Government contacts
+  admin_email: "it-director@agency.gov"
+  security_contact: "security@agency.gov"
+  compliance_officer: "compliance@agency.gov"
+  
+  # Custom settings
+  custom_settings:
+    cache_similarity_threshold: 0.98  # High precision
+    validation_quality_threshold: 0.9  # Strict validation
+    audit_retention_days: 3650        # 10 years for gov records
+    compliance_level: "fips"
+    data_classification: "sensitive"
+    access_control: "rbac"
+
+# =============================================================================
+# TENANT TEMPLATES
+# =============================================================================
+
+# These templates can be used to quickly create new tenants
+tenant_templates:
+  small_business:
+    monthly_budget_usd: 300
+    daily_budget_usd: 15
+    routing_mode: "cost_optimized"
+    allowed_models: ["llama3-8b-instruct", "claude-3-haiku-20240307"]
+    
+  medium_business:
+    monthly_budget_usd: 2000
+    daily_budget_usd: 100
+    routing_mode: "balanced"
+    allowed_models: ["llama3-8b-instruct", "gpt-4-turbo", "claude-3-5-sonnet-20241022"]
+    
+  large_enterprise:
+    monthly_budget_usd: 15000
+    daily_budget_usd: 750
+    routing_mode: "performance"
+    allowed_models: ["gpt-4-turbo", "claude-3-5-sonnet-20241022", "claude-3-opus-20240229"]
+
+# =============================================================================
+# GLOBAL TENANT SETTINGS
+# =============================================================================
+
+global_settings:
+  # Default feature flags for new tenants
+  default_features:
+    enable_semantic_cache: true
+    enable_response_validation: true
+    enable_audit_logging: true
+    enable_budget_management: true
+    enable_analytics: false  # Disabled by default for cost
+  
+  # Default budget for new tenants
+  default_budget:
+    monthly_usd: 1000
+    daily_usd: 50
+  
+  # Default routing for new tenants
+  default_routing_mode: "local-preferred"
+  
+  # Security defaults
+  default_security:
+    enable_rate_limiting: true
+    rate_limit_per_minute: 60
+    enable_input_validation: true
+    max_input_length: 50000
+  
+  # Compliance requirements
+  compliance_requirements:
+    audit_retention_days: 2555  # 7 years
+    data_encryption: true
+    access_logging: true
+  
+  # Tenant lifecycle
+  lifecycle:
+    trial_period_days: 30
+    inactive_threshold_days: 90
+    cleanup_after_days: 365

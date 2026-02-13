@@ -1,0 +1,368 @@
+# Agent Orchestra v2 Policy Configuration
+# Enhanced policies with learning, caching, validation, and budget awareness
+
+# =============================================================================
+# ROUTING POLICIES
+# =============================================================================
+
+routing:
+  # Default routing modes
+  default_mode: local-preferred  # Options: local-preferred, balanced, performance, cost_optimized
+  
+  # Policy weights for different routing modes
+  weights:
+    local-preferred:
+      cost: 0.6        # Heavily prefer free local models
+      quality: 0.25    # Still care about quality
+      latency: 0.15    # Some latency consideration
+      
+    balanced:
+      cost: 0.4        # Moderate cost preference
+      quality: 0.4     # Equal weight to quality
+      latency: 0.2     # Consider performance
+      
+    performance:
+      cost: 0.2        # Less cost sensitive
+      quality: 0.6     # Prioritize quality
+      latency: 0.2     # Consider performance
+      
+    cost_optimized:
+      cost: 0.7        # Heavily cost-focused
+      quality: 0.2     # Minimum quality requirements
+      latency: 0.1     # Less latency concern
+
+# =============================================================================
+# LEARNING POLICIES
+# =============================================================================
+
+learning:
+  # Enable reinforcement learning for model selection
+  enable_thompson_sampling: true
+  
+  # Confidence thresholds for learned mappings
+  min_confidence_for_learned: 0.7
+  min_sample_count: 50
+  
+  # Success rate thresholds
+  success_rate_threshold: 0.95
+  quality_threshold_for_learning: 0.7
+  
+  # Learning schedule
+  training_schedule: "0 1 * * *"  # Daily at 1 AM
+  retrain_interval_hours: 24
+  
+  # Exploration vs exploitation
+  exploration_rate: 0.1  # 10% exploration
+  exploration_decay: 0.99  # Decay over time
+  
+  # Model performance tracking
+  performance_window_days: 30
+  min_requests_for_analysis: 100
+
+# =============================================================================
+# CACHING POLICIES
+# =============================================================================
+
+caching:
+  # Semantic caching configuration
+  enable_semantic_cache: true
+  similarity_threshold: 0.95
+  
+  # Cache TTL and size limits
+  cache_ttl_days: 30
+  cache_max_size_gb: 1
+  cache_max_entries: 100000
+  
+  # Cache eligibility
+  min_quality_score_for_cache: 0.6
+  min_response_length: 50
+  max_response_length: 10000
+  
+  # Cache eviction policies
+  eviction_policy: "lru"  # Options: lru, lfu, ttl
+  cleanup_interval_hours: 6
+  
+  # Cache warming
+  enable_cache_warming: true
+  warming_schedule: "0 3 * * *"  # Daily at 3 AM
+  warming_tasks: ["general_chat", "code_generation"]
+
+# =============================================================================
+# VALIDATION POLICIES
+# =============================================================================
+
+validation:
+  # Response validation settings
+  enable_response_validation: true
+  
+  # Quality thresholds
+  hallucination_threshold: 0.3
+  toxicity_threshold: 0.7
+  relevance_threshold: 0.6
+  coherence_threshold: 0.7
+  
+  # Task-specific validation
+  task_validation:
+    code_generation:
+      enable_syntax_check: true
+      enable_security_scan: true
+      min_quality_score: 0.8
+      
+    data_analysis:
+      enable_fact_checking: true
+      enable_numerical_validation: true
+      min_quality_score: 0.7
+      
+    creative_writing:
+      enable_plagiarism_check: false  # Privacy concerns
+      min_quality_score: 0.6
+      
+    general_chat:
+      enable_basic_validation: true
+      min_quality_score: 0.5
+  
+  # Validation failure actions
+  validation_failure_action: "retry_with_different_model"
+  max_validation_retries: 2
+  
+  # Quality feedback loop
+  enable_quality_feedback: true
+  feedback_weight_in_learning: 0.3
+
+# =============================================================================
+# BUDGET POLICIES
+# =============================================================================
+
+budget:
+  # Budget enforcement
+  enable_budget_enforcement: true
+  
+  # Default limits (can be overridden per tenant)
+  default_monthly_budget_usd: 1000
+  default_daily_budget_usd: 50
+  
+  # Alert thresholds
+  warning_threshold_pct: 80
+  critical_threshold_pct: 95
+  
+  # Budget exceeded actions
+  budget_exceeded_action: "downgrade_to_local"  # Options: downgrade_to_local, block_requests, warn_only
+  
+  # Cost optimization
+  enable_cost_optimization: true
+  cost_saving_target_pct: 20  # Target 20% cost reduction
+  
+  # Budget-aware routing
+  budget_aware_routing:
+    enable: true
+    budget_threshold_for_downgrade: 80  # Downgrade at 80% budget usage
+    preferred_local_models: ["llama3-8b-instruct", "qwen2.5-3b-instruct"]
+
+# =============================================================================
+# MULTI-TENANCY POLICIES
+# =============================================================================
+
+multi_tenancy:
+  # Tenant isolation
+  enable_data_isolation: true
+  enable_resource_isolation: true
+  
+  # Default tenant policies
+  default_tenant_policies:
+    allowed_models: []  # Empty = all models allowed
+    blocked_models: []
+    custom_policy_weights: null
+    
+  # Tenant-specific overrides (examples)
+  tenant_overrides:
+    # Enterprise tenant with higher budget
+    enterprise_acme:
+      monthly_budget_usd: 10000
+      daily_budget_usd: 500
+      allowed_models: ["gpt-4-turbo", "claude-3-5-sonnet-20241022"]
+      custom_policy_weights:
+        cost: 0.2
+        quality: 0.7
+        latency: 0.1
+    
+    # Startup tenant with budget constraints
+    startup_xyz:
+      monthly_budget_usd: 500
+      daily_budget_usd: 25
+      routing_mode: "cost_optimized"
+      enable_semantic_cache: true
+      
+    # Development tenant
+    dev_internal:
+      monthly_budget_usd: 200
+      daily_budget_usd: 10
+      routing_mode: "local-preferred"
+      allowed_models: ["llama3-8b-instruct", "qwen2.5-3b-instruct"]
+
+# =============================================================================
+# SECURITY POLICIES
+# =============================================================================
+
+security:
+  # Input validation
+  enable_input_sanitization: true
+  max_input_length: 100000
+  max_requests_per_minute: 100
+  
+  # Content filtering
+  enable_content_filtering: true
+  blocked_content_types:
+    - "hate_speech"
+    - "violence"
+    - "adult_content"
+    - "illegal_activities"
+  
+  # Data privacy
+  enable_data_masking: false  # Set to true for sensitive data
+  mask_patterns:
+    - "\\b\\d{4}[-\\s]?\\d{4}[-\\s]?\\d{4}[-\\s]?\\d{4}\\b"  # Credit cards
+    - "\\b[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\\.[A-Z|a-z]{2,}\\b"  # Emails
+  
+  # Rate limiting
+  enable_rate_limiting: true
+  rate_limit_per_minute: 60
+  rate_limit_per_hour: 1000
+  
+  # Authentication
+  enable_authentication: false  # Set to true for production
+  jwt_secret_key: "your-secret-key"
+  jwt_expire_hours: 24
+
+# =============================================================================
+# MONITORING POLICIES
+# =============================================================================
+
+monitoring:
+  # Metrics collection
+  enable_metrics_collection: true
+  metrics_retention_days: 90
+  
+  # Performance monitoring
+  enable_performance_monitoring: true
+  performance_alerts:
+    p99_latency_threshold_ms: 1000
+    error_rate_threshold: 0.05
+    success_rate_threshold: 0.95
+  
+  # Cost monitoring
+  enable_cost_monitoring: true
+  cost_alerts:
+    daily_spend_threshold_usd: 100
+    monthly_spend_threshold_usd: 2000
+    cost_per_request_threshold_usd: 0.10
+  
+  # Quality monitoring
+  enable_quality_monitoring: true
+  quality_alerts:
+    avg_quality_threshold: 0.7
+    validation_failure_threshold: 0.1
+  
+  # Health checks
+  enable_health_checks: true
+  health_check_interval_seconds: 30
+  unhealthy_threshold_count: 3
+
+# =============================================================================
+# COMPLIANCE POLICIES
+# =============================================================================
+
+compliance:
+  # Audit logging
+  enable_audit_logging: true
+  audit_retention_days: 2555  # 7 years for compliance
+  
+  # Data residency
+  enable_data_residency_enforcement: true
+  default_data_region: "us-east"
+  
+  # GDPR compliance
+  enable_gdpr_compliance: true
+  data_deletion_request_days: 30
+  
+  # SOC 2 compliance
+  enable_soc2_compliance: true
+  security_controls:
+    - "access_control"
+    - "encryption_at_rest"
+    - "encryption_in_transit"
+    - "audit_logging"
+    - "incident_response"
+
+# =============================================================================
+# EXPERIMENTAL FEATURES
+# =============================================================================
+
+experimental:
+  # Enable experimental features (use with caution)
+  enable_experimental_features: false
+  
+  # Experimental routing algorithms
+  enable_ml_routing: false
+  enable_context_aware_routing: false
+  
+  # Experimental caching
+  enable_distributed_cache: false
+  enable_cache_compression: false
+  
+  # Experimental validation
+  enable_multi_model_validation: false
+  enable_human_in_the_loop: false
+
+# =============================================================================
+# FEATURE FLAGS
+# =============================================================================
+
+feature_flags:
+  # Core v2 features
+  auto_discovery: true
+  semantic_caching: true
+  response_validation: true
+  learned_mappings: true
+  multi_tenancy: true
+  budget_management: true
+  audit_logging: true
+  real_time_analytics: true
+  
+  # Advanced features
+  reinforcement_learning: true
+  advanced_policy_engine: true
+  automated_optimization: true
+  performance_monitoring: true
+  
+  # Optional features
+  slack_notifications: false
+  email_alerts: false
+  custom_dashboards: false
+  api_rate_limiting: false
+
+# =============================================================================
+# POLICY VERSIONING
+# =============================================================================
+
+policy_version: "2.0.0"
+last_updated: "2024-01-15T10:30:00Z"
+update_schedule: "0 4 * * 0"  # Weekly on Sunday at 4 AM
+
+# =============================================================================
+# POLICY VALIDATION
+# =============================================================================
+
+validation_rules:
+  # Ensure policy consistency
+  max_policy_weight_sum: 1.0
+  min_quality_threshold: 0.1
+  max_cost_threshold_usd: 10.0
+  
+  # Validate tenant configurations
+  max_monthly_budget_usd: 100000
+  max_daily_budget_usd: 5000
+  
+  # Validate cache settings
+  min_similarity_threshold: 0.5
+  max_similarity_threshold: 0.99
+  max_cache_ttl_days: 365

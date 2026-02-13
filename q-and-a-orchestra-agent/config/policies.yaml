@@ -1,0 +1,71 @@
+# config/policies.yaml
+# Rules for model selection, routing modes, and budget guardrails.
+
+routing:
+  default_mode: local-preferred   # local-only | local-preferred | balanced | performance
+
+  modes:
+    local-only:
+      allow_cloud: false
+    local-preferred:
+      allow_cloud: true
+      cloud_usage_strategy: fallback_critical_only
+    balanced:
+      allow_cloud: true
+      cloud_usage_strategy: balanced
+    performance:
+      allow_cloud: true
+      cloud_usage_strategy: aggressive
+
+  weights:
+    # composite score = w_cost * cost + w_quality * (1/quality_rank) + w_latency * latency_rank
+    local-preferred:
+      cost: 0.6
+      quality: 0.25
+      latency: 0.15
+    balanced:
+      cost: 0.4
+      quality: 0.4
+      latency: 0.2
+    performance:
+      cost: 0.2
+      quality: 0.6
+      latency: 0.2
+
+task_overrides:
+  # Prefer tiny local models for routing/critics
+  routing:
+    preferred_providers: [ollama]
+    preferred_capabilities: [routing, classification, critic]
+  critic:
+    preferred_providers: [ollama]
+    preferred_capabilities: [critic, routing]
+  qa:
+    preferred_capabilities: [general_qa, complex_qa]
+  planning:
+    preferred_capabilities: [planning, multi_agent_orchestration]
+
+budgets:
+  # Rough limits; cost profile is approximate.
+  daily:
+    total_usd: 10.0
+    per_provider:
+      openai: 5.0
+      anthropic: 5.0
+  monthly:
+    total_usd: 150.0
+    per_provider:
+      openai: 75.0
+      anthropic: 75.0
+
+behavior_on_budget_exceeded:
+  # downgrade_to_local | hard_block | warn_only
+  default: downgrade_to_local
+  non_critical_tasks: hard_block
+  critical_tasks: downgrade_to_local
+
+timeouts:
+  # in seconds
+  default: 60
+  high_latency_ok: 120
+  low_latency_required: 15
