@@ -1,0 +1,85 @@
+# Requirements with Context Engineering Dependencies
+# Built upon requirements.v2.txt
+
+# Core dependencies from requirements.v2.txt
+fastapi==0.104.1
+uvicorn[standard]==0.24.0
+pydantic==2.5.0
+pydantic-settings==2.1.0
+redis==5.0.1
+asyncpg==0.29.0
+sqlalchemy[asyncio]==2.0.23
+alembic==1.13.1
+httpx==0.25.2
+python-jose[cryptography]==3.3.0
+passlib[bcrypt]==1.7.4
+python-multipart==0.0.6
+aiofiles==23.2.1
+python-dotenv==1.0.0
+structlog==23.2.0
+prometheus-client==0.19.0
+opentelemetry-api==1.21.0
+opentelemetry-sdk==1.21.0
+opentelemetry-instrumentation-fastapi==0.42b0
+opentelemetry-instrumentation-httpx==0.42b0
+opentelemetry-exporter-jaeger==1.21.0
+opentelemetry-exporter-prometheus==1.21.0
+weaviate-client==3.25.3
+psutil==5.9.6
+tenacity==8.2.3
+cryptography==41.0.8
+pytest==7.4.3
+pytest-asyncio==0.21.1
+pytest-cov==4.1.0
+httpx==0.25.2
+factory-boy==3.3.0
+faker==20.1.0
+pre-commit==3.6.0
+black==23.11.0
+isort==5.12.0
+flake8==6.1.0
+mypy==1.7.1
+bandit==1.7.5
+safety==2.3.5
+
+# Context Engineering Specific Dependencies
+mem0ai==0.0.5  # Memory system for user history
+langchain==0.1.0  # For intent detection and context processing
+sentence-transformers==2.2.2  # For semantic similarity in caching
+numpy==1.24.4  # Numerical operations for context processing
+scikit-learn==1.3.2  # For intent classification
+tiktoken==0.5.2  # For accurate token counting
+jinja2==3.1.2  # For context template rendering
+
+# Enhanced Context Sources
+gitpython==3.1.40  # For repository analysis
+tree-sitter==0.20.4  # For code parsing and analysis
+pygithub==2.1.1  # For GitHub integration
+chromadb==0.4.18  # Alternative vector store for RAG
+pinecone-client==3.0.0  # Vector database for domain context
+
+# Context Caching and Performance
+aiocache==0.12.2  # Async caching for context layers
+cachetools==5.3.2  # Additional caching utilities
+orjson==3.9.10  # Fast JSON serialization for context
+
+# Compliance and Security
+pydantic-extra-types==2.5.0  # Additional validation types
+email-validator==2.1.0  # For PII detection
+phonenumbers==8.13.25  # For phone number PII detection
+sqlparse==0.4.4  # For SQL injection detection
+
+# Monitoring and Observability for Context
+rich==13.7.0  # For beautiful context debugging output
+tabulate==0.9.0  # For context metrics tables
+typer==0.9.0  # For context CLI tools
+
+# Testing Context Engineering
+pytest-mock==3.12.0  # For mocking context sources
+freezegun==1.2.2  # For time-based context testing
+responses==0.24.1  # For mocking HTTP context sources
+
+# Development Tools for Context
+jupyter==1.0.0  # For context analysis notebooks
+matplotlib==3.8.2  # For context visualization
+seaborn==0.13.0  # For context metrics visualization
