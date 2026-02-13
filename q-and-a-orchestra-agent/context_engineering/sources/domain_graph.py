@@ -5,12 +5,41 @@ StackConsulting Pattern: Extract workspace entities, relationships,
 and relevant documents from repository analysis and project metadata.
 """
 
-from typing import Dict, Any, Optional, List
 import os
+from typing import Dict, Any, Optional, List
+import pathlib
+import re
 
 from ..models import DomainContext
+from ...config.security_config import validate_repo_path_security, is_safe_file
 
 logger = __import__("logging").getLogger(__name__)
+
+# Validate repository path to prevent path traversal
+def validate_repo_path(repo_path: str) -> Optional[str]:
+    """Validate and normalize repository path to prevent path traversal."""
+    if not repo_path:
+        return None
+    
+    # Use security configuration validation
+    validation_result = validate_repo_path_security(repo_path)
+    if not validation_result["valid"]:
+        logger.warning(f"Path validation failed: {validation_result['reason']}")
+        return None
+    
+    # Convert to absolute path within allowed base directory
+    base_dir = os.getenv("ALLOWED_REPO_BASE_DIR", "/tmp/repos")
+    if not os.path.exists(base_dir):
+        os.makedirs(base_dir, exist_ok=True)
+    
+    full_path = os.path.abspath(os.path.join(base_dir, repo_path))
+    
+    # Ensure the resolved path is still within base directory
+    if not full_path.startswith(os.path.abspath(base_dir)):
+        logger.warning(f"Path traversal attempt blocked: {repo_path}")
+        return None
+    
+    return full_path
 
 
 def build_domain_context(request_context: Dict[str, Any], repo_analyzer_client=None) -> DomainContext:
@@ -37,9 +66,15 @@ def build_domain_context(request_context: Dict[str, Any], repo_analyzer_client=N
         entity_relationships={},
     )
     
-    # If we have a repo path, analyze it
-    if repo_path and os.path.exists(repo_path):
-        domain_context = _analyze_repository(domain_context, repo_path, repo_analyzer_client)
+    # If we have a repo path, validate and analyze it
+    if repo_path:
+        validated_path = validate_repo_path(repo_path)
+        if validated_path and os.path.exists(validated_path):
+            domain_context = _analyze_repository(domain_context, validated_path, repo_analyzer_client)
+            domain_context.repo_path = validated_path
+        else:
+            logger.warning(f"Invalid or inaccessible repository path: {repo_path}")
+            domain_context.repo_summary = "Invalid repository path"
     
     # Add project metadata if available
     if project_id:
@@ -86,33 +121,53 @@ def _basic_repo_analysis(domain_context: DomainContext, repo_path: str) -> Domai
         # Look for key directories and files
         components = {}
         
-        # Check for common framework indicators
-        if os.path.exists(os.path.join(repo_path, "package.json")):
-            components["frontend"] = "Node.js/JavaScript project"
-        if os.path.exists(os.path.join(repo_path, "requirements.txt")) or os.path.exists(os.path.join(repo_path, "pyproject.toml")):
-            components["backend"] = "Python project"
-        if os.path.exists(os.path.join(repo_path, "Dockerfile")):
-            components["containerization"] = "Docker support"
-        if os.path.exists(os.path.join(repo_path, "docker-compose.yml")):
-            components["orchestration"] = "Docker Compose setup"
+        # Define safe file/directory patterns to check
+        safe_patterns = {
+            "package.json": "frontend",
+            "requirements.txt": "backend",
+            "pyproject.toml": "backend",
+            "Dockerfile": "containerization",
+            "docker-compose.yml": "orchestration",
+            "migrations": "database",
+            "alembic": "database",
+            "README.md": "documentation",
+        }
         
-        # Look for database directories
-        if os.path.exists(os.path.join(repo_path, "migrations")) or os.path.exists(os.path.join(repo_path, "alembic")):
-            components["database"] = "Database migrations present"
+        # Check for safe files only
+        for file_pattern, component_type in safe_patterns.items():
+            file_path = os.path.join(repo_path, file_pattern)
+            if os.path.isfile(file_path) and is_safe_file(file_path):  # Use security check
+                if component_type == "frontend":
+                    components["frontend"] = "Node.js/JavaScript project"
+                elif component_type == "backend":
+                    components["backend"] = "Python project"
+                elif component_type == "containerization":
+                    components["containerization"] = "Docker support"
+                elif component_type == "orchestration":
+                    components["orchestration"] = "Docker Compose setup"
+                elif component_type == "database":
+                    components["database"] = "Database migrations present"
         
-        # Look for test directories
-        test_dirs = ["tests", "test", "__tests__", "spec"]
-        for test_dir in test_dirs:
-            if os.path.exists(os.path.join(repo_path, test_dir)):
+        # Look for test directories (safe check)
+        safe_test_dirs = ["tests", "test", "__tests__", "spec"]
+        for test_dir in safe_test_dirs:
+            test_path = os.path.join(repo_path, test_dir)
+            if os.path.isdir(test_path):  # Use isdir for directories
                 components["testing"] = f"Test suite in {test_dir}/"
                 break
         
-        # Look for documentation
-        doc_files = ["README.md", "docs/", "documentation/"]
+        # Look for documentation directory (safe check)
+        doc_dirs = ["docs", "documentation"]
         related_docs = {}
-        for doc in doc_files:
-            if os.path.exists(os.path.join(repo_path, doc)):
-                related_docs[doc] = os.path.join(repo_path, doc)
+        for doc_dir in doc_dirs:
+            doc_path = os.path.join(repo_path, doc_dir)
+            if os.path.isdir(doc_path):
+                related_docs[doc_dir] = doc_path
+        
+        # Check for README file
+        readme_path = os.path.join(repo_path, "README.md")
+        if os.path.isfile(readme_path) and is_safe_file(readme_path):
+            related_docs["README.md"] = readme_path
         
         # Create basic summary
         domain_context.repo_summary = f"Repository at {repo_path} with components: {', '.join(components.keys())}"
@@ -121,7 +176,7 @@ def _basic_repo_analysis(domain_context: DomainContext, repo_path: str) -> Domai
         
     except Exception as e:
         logger.error(f"Basic repository analysis failed: {e}")
-        domain_context.repo_summary = f"Unable to analyze repository: {str(e)}"
+        domain_context.repo_summary = "Unable to analyze repository"
     
     return domain_context
 

@@ -126,15 +126,18 @@ class ErrorHandlingMiddleware(BaseHTTPMiddleware):
             )
             
             # Return sanitized error to client
-            if self.env == "production":
-                # Production: hide details
+            # Default to production mode for security
+            is_production = self.env == "production" or self.env is None
+            
+            if is_production:
+                # Production: hide all details
                 error_response = {
                     "error": "Internal server error",
                     "request_id": request.headers.get("x-request-id", "unknown"),
                     "timestamp": self._get_timestamp()
                 }
             else:
-                # Development: show details
+                # Development: show limited details (no stack traces)
                 error_response = {
                     "error": str(exc),
                     "type": type(exc).__name__,
@@ -142,6 +145,10 @@ class ErrorHandlingMiddleware(BaseHTTPMiddleware):
                     "method": request.method,
                     "timestamp": self._get_timestamp()
                 }
+                
+                # Remove any potential sensitive information from error message
+                if "password" in str(exc).lower() or "secret" in str(exc).lower() or "token" in str(exc).lower():
+                    error_response["error"] = "Internal server error"
             
             return JSONResponse(
                 status_code=500,
