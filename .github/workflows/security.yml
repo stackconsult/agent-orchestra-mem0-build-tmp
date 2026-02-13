@@ -55,9 +55,14 @@ jobs:
 
       - name: Semgrep (SAST) - Comprehensive Scan
         run: |
-          docker run --rm -v "${{ github.workspace }}:/src" returntocorp/semgrep semgrep scan --config=p/security-audit --config=p/owasp-top-ten --config=p/cwe-top-25 --config=p/python --config=p/sql --config=p/command-injection --config=p/privilege-escalation --verbose --no-git-ignore --include="*.py" --include="*.js" --include="*.ts" --include="*.yml" --include="*.yaml" --include="*.json" --exclude="**/__pycache__/**" --exclude="**/node_modules/**" --exclude="**/.git/**" --severity=INFO --autofix --max-target-bytes=1000000 --sarif . > semgrep-results.sarif
+          if [ "${{ secrets.SEMGREP_APP_TOKEN }}" != "" ]; then
+            docker run --rm -v "${{ github.workspace }}:/src" returntocorp/semgrep semgrep scan --config=p/security-audit --config=p/owasp-top-ten --config=p/cwe-top-25 --config=p/python --config=p/sql --config=p/command-injection --config=p/privilege-escalation --verbose --no-git-ignore --include="*.py" --include="*.js" --include="*.ts" --include="*.yml" --include="*.yaml" --include="*.json" --exclude="**/__pycache__/**" --exclude="**/node_modules/**" --exclude="**/.git/**" --severity=INFO --autofix --max-target-bytes=1000000 --sarif . > semgrep-results.sarif
+          else
+            echo "SEMGREP_APP_TOKEN not configured, running Semgrep without authentication..."
+            docker run --rm -v "${{ github.workspace }}:/src" returntocorp/semgrep semgrep scan --config=p/security-audit --config=p/owasp-top-ten --config=p/cwe-top-25 --config=p/python --config=p/sql --config=p/command-injection --config=p/privilege-escalation --verbose --no-git-ignore --include="*.py" --include="*.js" --include="*.ts" --include="*.yml" --include="*.yaml" --include="*.json" --exclude="**/__pycache__/**" --exclude="**/node_modules/**" --exclude="**/.git/**" --severity=INFO --max-target-bytes=1000000 --sarif . > semgrep-results.sarif
+          fi
         env:
-          SEMGREP_APP_TOKEN: ${{ secrets.SEMGREP_APP_TOKEN }}
+          SEMGREP_APP_TOKEN: ${{ secrets.SEMGREP_APP_TOKEN || '' }}
         continue-on-error: true
 
   code-scanning:
