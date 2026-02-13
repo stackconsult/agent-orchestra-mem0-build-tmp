@@ -13,6 +13,7 @@ This document describes the security fixes implemented to address CodeQL vulnera
 **Fixes Implemented:**
 
 #### a) Added Path Validation Function
+
 ```python
 def validate_repo_path(repo_path: str) -> Optional[str]:
     """Validate and normalize repository path to prevent path traversal."""
@@ -24,6 +25,7 @@ def validate_repo_path(repo_path: str) -> Optional[str]:
 - Returns `None` for invalid paths
 
 #### b) Created Security Configuration Module
+
 **File:** `config/security_config.py`
 
 - Centralized security settings
@@ -33,14 +35,17 @@ def validate_repo_path(repo_path: str) -> Optional[str]:
 - Sensitive keyword detection
 
 #### c) Enhanced File Access Safety
+
 - Replaced `os.path.exists()` with specific `os.path.isfile()` and `os.path.isdir()`
 - Added `is_safe_file()` validation before accessing any file
 - Only accesses pre-approved file types
 
 #### d) Environment Variable Protection
+
 ```python
 base_dir = os.getenv("ALLOWED_REPO_BASE_DIR", "/tmp/repos")
 ```
+
 - Uses secure default base directory
 - Ensures all paths are resolved within this directory
 
@@ -53,22 +58,27 @@ base_dir = os.getenv("ALLOWED_REPO_BASE_DIR", "/tmp/repos")
 **Fixes Implemented:**
 
 #### a) Production-First Security
+
 ```python
 # Default to production mode for security
 is_production = self.env == "production" or self.env is None
 ```
+
 - Production mode is now the default (even if env is None)
 - Only shows detailed errors in explicit development mode
 
 #### b) Sensitive Keyword Filtering
+
 ```python
 if "password" in str(exc).lower() or "secret" in str(exc).lower() or "token" in str(exc).lower():
     error_response["error"] = "Internal server error"
 ```
+
 - Detects and filters sensitive keywords
 - Replaces sensitive messages with generic error
 
 #### c) Error Message Sanitization
+
 - Created `sanitize_error_message()` function
 - Removes file paths, stack traces, and sensitive data
 - Configurable through environment variables
@@ -110,6 +120,7 @@ The system now includes comprehensive security headers:
 **File:** `tests/test_security_fixes.py`
 
 Comprehensive tests covering:
+
 - Path traversal protection
 - Information exposure prevention
 - File safety validation
@@ -128,21 +139,25 @@ python -m pytest tests/test_security_fixes.py --cov=context_engineering.sources.
 ## Best Practices Implemented
 
 ### 1. Defense in Depth
+
 - Multiple layers of validation
 - Fail-safe defaults
 - Explicit allowlists over blocklists
 
 ### 2. Principle of Least Privilege
+
 - Restricted file system access
 - Minimal error exposure
 - Secure default configurations
 
 ### 3. Secure by Default
+
 - Production mode as default
 - All inputs validated
 - Sensitive data filtered
 
 ### 4. Comprehensive Logging
+
 - Security events logged
 - Failed attempts tracked
 - Audit trail maintained
@@ -152,17 +167,20 @@ python -m pytest tests/test_security_fixes.py --cov=context_engineering.sources.
 ### Security Events Logged
 
 1. **Path Traversal Attempts**
-   ```
+
+   ```bash
    WARNING: Path traversal attempt blocked: ../../../etc/passwd
    ```
 
 2. **Invalid File Access**
-   ```
+
+   ```bash
    WARNING: Attempted access to blocked file: .env
    ```
 
 3. **Sensitive Information in Errors**
-   ```
+
+   ```bash
    INFO: Sanitized error message containing sensitive data
    ```
 
@@ -176,12 +194,14 @@ python -m pytest tests/test_security_fixes.py --cov=context_engineering.sources.
 ## Deployment Considerations
 
 ### 1. Base Directory Configuration
+
 ```bash
 # Set secure base directory for repositories
 export ALLOWED_REPO_BASE_DIR=/var/www/repositories
 ```
 
 ### 2. File System Permissions
+
 ```bash
 # Ensure proper permissions
 chmod 755 $ALLOWED_REPO_BASE_DIR
@@ -189,13 +209,14 @@ chown app:app $ALLOWED_REPO_BASE_DIR
 ```
 
 ### 3. Environment Security
+
 ```bash
 # Use production mode in production
 export ENV=production
 export DEFAULT_TO_PRODUCTION_MODE=true
 ```
 
-## Future Enhancements
+### Future Enhancements
 
 1. **File Content Scanning** - Scan file contents for sensitive patterns
 2. **Rate Limiting** - Limit repeated failed attempts
@@ -206,6 +227,7 @@ export DEFAULT_TO_PRODUCTION_MODE=true
 ## Compliance
 
 These fixes help maintain compliance with:
+
 - OWASP Top 10 (A01 - Broken Access Control)
 - SOC 2 (Security Principle)
 - GDPR (Data Protection)
@@ -214,6 +236,7 @@ These fixes help maintain compliance with:
 ## Summary
 
 The security fixes address all identified CodeQL vulnerabilities:
+
 - ✅ Path traversal vulnerabilities eliminated
 - ✅ Information exposure prevented
 - ✅ Secure defaults implemented
